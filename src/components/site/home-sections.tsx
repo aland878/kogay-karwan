@@ -91,7 +91,7 @@ export function FeaturedProducts({
             eyebrow="Our Range"
             title="Stocked and ready for"
             highlight="wholesale orders"
-            lead="A selection from over 5,000 lines across food, beverages, dairy, household and personal care."
+            lead="A selection from our wholesale catalog — food, household, stationery, electrical and more."
             className="max-w-xl"
           />
           <ButtonLink

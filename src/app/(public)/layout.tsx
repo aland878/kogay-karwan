@@ -3,6 +3,7 @@ import { SiteHeader } from "@/components/site/site-header";
 import { SmoothScroll } from "@/components/site/smooth-scroll";
 import { getSettings } from "@/lib/data";
 import { localize } from "@/lib/domain/types";
+import { getLocale } from "@/lib/i18n/locale";
 
 /**
  * Public site shell — header, smooth scroll, footer.
@@ -16,16 +17,20 @@ export default async function PublicLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const settings = await getSettings().getSettings();
+  const [settings, locale] = await Promise.all([
+    getSettings().getSettings(),
+    getLocale(),
+  ]);
 
   return (
     <SmoothScroll>
       <SiteHeader
-        businessName={localize(settings.business.name, "en")}
-        tagline={localize(settings.business.tagline, "en")}
+        businessName={localize(settings.business.name, locale)}
+        tagline={localize(settings.business.tagline, locale)}
+        locale={locale}
       />
       <main id="main">{children}</main>
-      <SiteFooter settings={settings} />
+      <SiteFooter settings={settings} locale={locale} />
     </SmoothScroll>
   );
 }

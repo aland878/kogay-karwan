@@ -5,16 +5,12 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { LogoLink } from "@/components/brand/logo";
+import { LocaleSwitcher } from "@/components/site/locale-switcher";
 import { ArrowRight, ButtonLink } from "@/components/ui/button";
-import {
-  ChevronDownIcon,
-  CloseIcon,
-  GlobeIcon,
-  MenuIcon,
-  UserIcon,
-} from "@/components/ui/icons";
+import { CloseIcon, MenuIcon, UserIcon } from "@/components/ui/icons";
 import { Container } from "@/components/ui/layout";
-import { LOCALES, type Locale } from "@/lib/domain/types";
+import type { Locale } from "@/lib/domain/types";
+import { t } from "@/lib/i18n/dictionary";
 import { cn } from "@/lib/utils";
 
 /**
@@ -27,24 +23,24 @@ import { cn } from "@/lib/utils";
  */
 
 const NAV = [
-  { href: "/", label: "Home" },
-  { href: "/products", label: "Products" },
-  { href: "/categories", label: "Categories" },
-  { href: "/brands", label: "Brands" },
-  { href: "/about", label: "About" },
-  { href: "/services", label: "Services" },
-  { href: "/gallery", label: "Gallery" },
-  { href: "/contact", label: "Contact" },
+  { href: "/", key: "nav.home" },
+  { href: "/products", key: "nav.products" },
+  { href: "/categories", key: "nav.categories" },
+  { href: "/brands", key: "nav.brands" },
+  { href: "/about", key: "nav.about" },
+  { href: "/services", key: "nav.services" },
+  { href: "/gallery", key: "nav.gallery" },
+  { href: "/contact", key: "nav.contact" },
 ] as const;
-
-const LOCALE_LABEL: Record<Locale, string> = { en: "EN", ar: "AR", ku: "KU" };
 
 export function SiteHeader({
   businessName,
   tagline,
+  locale,
 }: {
   businessName: string;
   tagline: string;
+  locale: Locale;
 }) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
@@ -101,7 +97,7 @@ export function SiteHeader({
                     : "text-ink-muted hover:text-ink",
                 )}
               >
-                {item.label}
+                {t(item.key, locale)}
                 {/* The gold underline from the reference marks the active page. */}
                 <span
                   aria-hidden="true"
@@ -117,7 +113,7 @@ export function SiteHeader({
           </nav>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            <LocaleSwitcher />
+            <LocaleSwitcher current={locale} />
 
             <Link
               href="/b2b/login"
@@ -129,7 +125,7 @@ export function SiteHeader({
               )}
             >
               <UserIcon className="size-4" />
-              Login
+              {t("action.login", locale)}
             </Link>
 
             <ButtonLink
@@ -139,7 +135,7 @@ export function SiteHeader({
               className="group hidden md:inline-flex"
               trailing={<ArrowRight />}
             >
-              Get Started
+              {t("action.getStarted", locale)}
             </ButtonLink>
 
             <button
@@ -176,7 +172,7 @@ export function SiteHeader({
                     : "text-ink-muted hover:bg-surface-muted hover:text-ink",
                 )}
               >
-                {item.label}
+                {t(item.key, locale)}
               </Link>
             ))}
 
@@ -197,71 +193,4 @@ export function SiteHeader({
 
 function MenuIconSwap() {
   return <CloseIcon />;
-}
-
-/**
- * Language switcher. Wired to the locale list; persistence lands with the i18n
- * routing layer, which is why it does not yet navigate.
- */
-function LocaleSwitcher() {
-  const [open, setOpen] = useState(false);
-  const [locale, setLocale] = useState<Locale>("en");
-
-  return (
-    <div className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((value) => !value)}
-        aria-expanded={open}
-        aria-haspopup="listbox"
-        aria-label="Change language"
-        className={cn(
-          "inline-flex items-center gap-1.5 rounded-full border border-line px-3 py-2",
-          "text-sm font-semibold text-ink-muted transition-colors",
-          "hover:border-line-strong hover:text-ink",
-        )}
-      >
-        <GlobeIcon className="size-4" />
-        <span className="hidden sm:inline">{LOCALE_LABEL[locale]}</span>
-        <ChevronDownIcon
-          className={cn(
-            "size-3.5 transition-transform duration-[var(--duration-quick)]",
-            open && "rotate-180",
-          )}
-        />
-      </button>
-
-      {open ? (
-        <ul
-          role="listbox"
-          className={cn(
-            "absolute end-0 top-full z-10 mt-2 min-w-32 overflow-hidden rounded-xl",
-            "border border-line bg-surface p-1 shadow-lift",
-          )}
-        >
-          {LOCALES.map((value) => (
-            <li key={value}>
-              <button
-                type="button"
-                role="option"
-                aria-selected={locale === value}
-                onClick={() => {
-                  setLocale(value);
-                  setOpen(false);
-                }}
-                className={cn(
-                  "w-full rounded-lg px-3 py-2 text-start text-sm font-medium transition-colors",
-                  locale === value
-                    ? "bg-accent-soft text-accent-strong"
-                    : "text-ink-muted hover:bg-surface-muted hover:text-ink",
-                )}
-              >
-                {value === "en" ? "English" : value === "ar" ? "العربية" : "کوردی"}
-              </button>
-            </li>
-          ))}
-        </ul>
-      ) : null}
-    </div>
-  );
 }

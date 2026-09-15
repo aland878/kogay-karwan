@@ -39,6 +39,12 @@ export interface CatalogRepository {
 
   listFeaturedProducts(limit?: number): Promise<Product[]>;
   listPublicFeaturedProducts(limit?: number): Promise<PublicProduct[]>;
+  /**
+   * Products to lead the homepage: the featured ones when Admin has picked
+   * any, otherwise a spread across categories so the rail is never empty on a
+   * freshly imported catalog.
+   */
+  listPublicShowcaseProducts(limit?: number): Promise<PublicProduct[]>;
 
   createProduct(input: Omit<Product, "id" | "createdAt" | "updatedAt">): Promise<Product>;
   updateProduct(id: string, patch: Partial<Product>): Promise<Product>;

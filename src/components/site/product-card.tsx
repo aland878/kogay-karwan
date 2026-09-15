@@ -24,7 +24,7 @@ const AVAILABILITY: Record<StockStatus, { label: string; tone: "success" | "warn
 export function ProductCard({
   product,
   brandName,
-  locale = "en",
+  locale = "ku",
   priority = false,
 }: {
   product: PublicProduct;

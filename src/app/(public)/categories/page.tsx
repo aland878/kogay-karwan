@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/site/page-header";
 import { CATEGORY_ICONS } from "@/components/ui/icons";
 import { Card, Container } from "@/components/ui/layout";
 import { getCatalog } from "@/lib/data";
+import { getLocale } from "@/lib/i18n/locale";
 import { localize } from "@/lib/domain/types";
 
 export const metadata: Metadata = {
@@ -14,7 +15,10 @@ export const metadata: Metadata = {
 };
 
 export default async function CategoriesPage() {
-  const categories = await getCatalog().listCategoryTree();
+  const [categories, locale] = await Promise.all([
+    getCatalog().listCategoryTree(),
+    getLocale(),
+  ]);
 
   return (
     <>
@@ -44,13 +48,13 @@ export default async function CategoriesPage() {
                         href={`/categories/${category.slug}`}
                         className="underline-offset-4 hover:underline"
                       >
-                        {localize(category.name, "en")}
+                        {localize(category.name, locale)}
                       </Link>
                     </h2>
 
                     {category.description ? (
                       <p className="mt-1 text-pretty text-sm leading-relaxed text-ink-muted">
-                        {localize(category.description, "en")}
+                        {localize(category.description, locale)}
                       </p>
                     ) : null}
 
@@ -66,7 +70,7 @@ export default async function CategoriesPage() {
                               href={`/categories/${child.slug}`}
                               className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface-muted px-3 py-1.5 text-xs font-medium text-ink-muted transition-colors hover:border-accent/40 hover:text-ink"
                             >
-                              {localize(child.name, "en")}
+                              {localize(child.name, locale)}
                               <span className="tabular-nums text-ink-subtle">
                                 {child.productCount ?? 0}
                               </span>

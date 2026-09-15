@@ -10,6 +10,7 @@ import {
 import { Hero } from "@/components/site/hero/hero";
 import { TrustedBrands } from "@/components/site/trusted-brands";
 import { getCatalog, getSettings } from "@/lib/data";
+import { getLocale } from "@/lib/i18n/locale";
 
 /**
  * Homepage — the composition from the supplied reference, in order:
@@ -21,24 +22,27 @@ export default async function HomePage() {
 
   // Fetched in parallel — these four queries have no interdependency, and
   // awaiting them in sequence would serialise the whole page render.
-  const [settings, brands, categories, featured] = await Promise.all([
+  const [locale, settings, brands, categories, showcase] = await Promise.all([
+    getLocale(),
     getSettings().getSettings(),
     catalog.listBrands({ featuredOnly: true }),
     catalog.listCategoryTree(),
-    catalog.listPublicFeaturedProducts(8),
+    catalog.listPublicShowcaseProducts(8),
   ]);
 
   return (
     <>
-      <Hero settings={settings} />
+      <Hero settings={settings} locale={locale} />
       <TrustedBrands brands={brands} />
-      <CategoryRail categories={categories} />
-      <WhyUs settings={settings} />
-      <FeaturedProducts products={featured} brands={brands} />
-      <AboutSection settings={settings} />
-      <ServicesSection settings={settings} />
-      <B2BCallout settings={settings} />
-      <ContactSection settings={settings} />
+      <CategoryRail categories={categories} locale={locale} />
+      <WhyUs settings={settings} locale={locale} />
+      <AboutSection settings={settings} locale={locale} />
+      <ServicesSection settings={settings} locale={locale} />
+      <B2BCallout settings={settings} locale={locale} />
+      {/* Products sit directly above Contact: the catalog is the last thing a
+          visitor reads before the WhatsApp and phone links they act on. */}
+      <FeaturedProducts products={showcase} brands={brands} locale={locale} />
+      <ContactSection settings={settings} locale={locale} />
     </>
   );
 }

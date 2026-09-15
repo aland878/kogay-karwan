@@ -167,6 +167,13 @@ export type Product = {
   /** Flat monetary discount, not a percentage. `null` when not discounted. */
   discount: Money | null;
 
+  /**
+   * `false` means the business knows whether an item is available but does not
+   * count units — which is how the imported price list works. When untracked,
+   * `stockQuantity` is a flag (0 = unavailable, >0 = available) and no count is
+   * ever shown, because inventing one would be fabricating inventory data.
+   */
+  stockTracked: boolean;
   stockQuantity: number;
   /** Below this, `stockStatus` reports "low-stock". Per-product, admin-set. */
   lowStockThreshold: number;
@@ -192,8 +199,24 @@ export function finalPrice(product: Product): Money {
 
 export function stockStatus(product: Product): StockStatus {
   if (product.stockQuantity <= 0) return "out-of-stock";
+  // Untracked lines have no count, so "low stock" is not a state they can reach.
+  if (!product.stockTracked) return "in-stock";
   if (product.stockQuantity <= product.lowStockThreshold) return "low-stock";
   return "in-stock";
+}
+
+/**
+ * How many units a buyer may order.
+ *
+ * Untracked products are not capped at their availability flag — a flag of 1
+ * means "we have it", not "we have one", and clamping an order to a single
+ * carton would be wrong. Tracked products cap at the real count.
+ */
+export const UNTRACKED_ORDER_CEILING = 9999;
+
+export function maxOrderableQuantity(product: Product): number {
+  if (product.stockQuantity <= 0) return 0;
+  return product.stockTracked ? product.stockQuantity : UNTRACKED_ORDER_CEILING;
 }
 
 /**

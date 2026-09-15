@@ -4,7 +4,8 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 
 import { SearchIcon } from "@/components/ui/icons";
-import type { ProductSort } from "@/lib/domain/types";
+import type { Locale, ProductSort } from "@/lib/domain/types";
+import { t } from "@/lib/i18n/dictionary";
 import { cn, pluralize } from "@/lib/utils";
 
 /**
@@ -19,22 +20,31 @@ import { cn, pluralize } from "@/lib/utils";
  * previous page under a dozen history entries.
  */
 
-const SORT_OPTIONS: { value: ProductSort; label: string }[] = [
-  { value: "relevance", label: "Most relevant" },
-  { value: "name-asc", label: "Name A–Z" },
-  { value: "name-desc", label: "Name Z–A" },
-  { value: "newest", label: "Newest first" },
+/**
+ * Sort labels are localised inline rather than through the dictionary: they are
+ * used nowhere else, and three near-identical keys per option would bloat the
+ * message catalog without making anything reusable.
+ */
+const SORT_OPTIONS: {
+  value: ProductSort;
+  label: Record<Locale, string>;
+}[] = [
+  {
+    value: "relevance",
+    label: { ku: "پەیوەندیدارترین", ar: "الأكثر صلة", en: "Most relevant" },
+  },
+  { value: "name-asc", label: { ku: "ناو ئ–ی", ar: "الاسم أ–ي", en: "Name A–Z" } },
+  { value: "name-desc", label: { ku: "ناو ی–ئ", ar: "الاسم ي–أ", en: "Name Z–A" } },
+  { value: "newest", label: { ku: "نوێترین", ar: "الأحدث", en: "Newest first" } },
 ];
-
-function formatCount(total: number): string {
-  return pluralize(total, "product");
-}
 
 export function CatalogToolbar({
   total,
-  placeholder = "Search products, brands or SKU…",
+  locale = "ku",
+  placeholder,
 }: {
   total: number;
+  locale?: Locale;
   placeholder?: string;
 }) {
   const router = useRouter();
@@ -97,7 +107,7 @@ export function CatalogToolbar({
           type="search"
           value={term}
           onChange={(event) => onSearchChange(event.target.value)}
-          placeholder={placeholder}
+          placeholder={placeholder ?? t("catalog.search", locale)}
           className={cn(
             "h-12 w-full rounded-xl border border-line bg-surface ps-11 pe-4",
             "text-[0.9375rem] text-ink placeholder:text-ink-subtle/70",
@@ -111,11 +121,17 @@ export function CatalogToolbar({
         {/* Result count is announced politely so a screen reader hears the
             catalog change without the focus being yanked out of the field. */}
         <p aria-live="polite" className="text-sm text-ink-muted">
-          {isPending ? "Searching…" : formatCount(total)}
+          {/* <bdi> isolates the digits so bidi reordering cannot drop the
+              number into the middle of the surrounding phrase in RTL. */}
+          <bdi>
+            {isPending
+              ? t("catalog.searching", locale)
+              : pluralize(total, t("catalog.products", locale))}
+          </bdi>
         </p>
 
         <label htmlFor="catalog-sort" className="sr-only">
-          Sort products
+          {t("catalog.sortBy", locale)}
         </label>
         <select
           id="catalog-sort"
@@ -133,7 +149,7 @@ export function CatalogToolbar({
         >
           {SORT_OPTIONS.map((option) => (
             <option key={option.value} value={option.value}>
-              {option.label}
+              {option.label[locale]}
             </option>
           ))}
         </select>

@@ -195,6 +195,36 @@ export class MockCatalogRepository implements CatalogRepository {
     return (await this.listFeaturedProducts(limit)).map(toPublicProduct);
   }
 
+  async listPublicShowcaseProducts(limit = 8): Promise<PublicProduct[]> {
+    const featured = await this.listFeaturedProducts(limit);
+    if (featured.length >= limit) return featured.map(toPublicProduct);
+
+    // Nothing curated yet: take one product from each of the largest
+    // categories so the rail shows the breadth of the catalog rather than
+    // whichever rows happen to sort first.
+    const seen = new Set(featured.map((product) => product.id));
+    const picked = [...featured];
+
+    for (const category of categories) {
+      if (picked.length >= limit) break;
+
+      const candidate = products.find(
+        (product) =>
+          product.active &&
+          product.stockQuantity > 0 &&
+          product.categoryId === category.id &&
+          !seen.has(product.id),
+      );
+
+      if (candidate) {
+        picked.push(candidate);
+        seen.add(candidate.id);
+      }
+    }
+
+    return picked.slice(0, limit).map(toPublicProduct);
+  }
+
   async createProduct(
     input: Omit<Product, "id" | "createdAt" | "updatedAt">,
   ): Promise<Product> {

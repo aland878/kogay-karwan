@@ -9,6 +9,7 @@ import { ProductCard } from "@/components/site/product-card";
 import { ButtonLink } from "@/components/ui/button";
 import { Container } from "@/components/ui/layout";
 import { getCatalog } from "@/lib/data";
+import { getLocale } from "@/lib/i18n/locale";
 import type { ProductSort } from "@/lib/domain/types";
 
 export const metadata: Metadata = {
@@ -32,7 +33,7 @@ export default async function ProductsPage({
 }: {
   searchParams: Promise<SearchParams>;
 }) {
-  const params = await searchParams;
+  const [params, locale] = await Promise.all([searchParams, getLocale()]);
   const catalog = getCatalog();
 
   const [categories, brands] = await Promise.all([
@@ -67,7 +68,7 @@ export default async function ProductsPage({
         eyebrow="Catalog"
         title="Everything we"
         highlight="supply"
-        lead="Over 5,000 lines across food, beverages, dairy, household and personal care. Wholesale pricing is available to approved B2B accounts."
+        lead={`${results.total.toLocaleString()} lines across ${categories.length} categories. Wholesale pricing is available to approved B2B accounts.`}
         crumbs={[{ href: "/", label: "Home" }, { label: "Products" }]}
       />
 
@@ -85,7 +86,7 @@ export default async function ProductsPage({
             {/* useSearchParams needs a Suspense boundary to avoid opting the
                 whole route out of static rendering. */}
             <Suspense fallback={<div className="h-12" />}>
-              <CatalogToolbar total={results.total} />
+              <CatalogToolbar total={results.total} locale={locale} />
             </Suspense>
 
             {results.items.length === 0 ? (
