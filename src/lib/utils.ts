@@ -63,3 +63,9 @@ export function toWhatsAppHref(phone: string, message?: string): string {
   const base = `https://wa.me/${toWhatsAppNumber(phone)}`;
   return message ? `${base}?text=${encodeURIComponent(message)}` : base;
 }
+
+/** "1 product" / "24 products" — avoids the "1 products" tell. */
+export function pluralize(count: number, singular: string, plural?: string): string {
+  const word = count === 1 ? singular : (plural ?? `${singular}s`);
+  return `${formatNumber(count)} ${word}`;
+}

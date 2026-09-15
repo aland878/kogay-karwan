@@ -3,6 +3,7 @@ import type {
   Category,
   CategoryNode,
   Discount,
+  GalleryItem,
   Order,
   OrderStatus,
   Paginated,
@@ -95,6 +96,12 @@ export interface SettingsRepository {
   updateSettings(patch: Partial<SiteSettings>): Promise<SiteSettings>;
   /** Narrow writer for the Website Appearance screen. */
   setTheme(theme: SiteSettings["theme"]): Promise<SiteSettings>;
+
+  /** Gallery is site content, managed alongside the rest of the CMS copy. */
+  listGallery(options?: { group?: GalleryItem["group"] }): Promise<GalleryItem[]>;
+  createGalleryItem(input: Omit<GalleryItem, "id">): Promise<GalleryItem>;
+  updateGalleryItem(id: string, patch: Partial<GalleryItem>): Promise<GalleryItem>;
+  deleteGalleryItem(id: string): Promise<void>;
 }
 
 /** The full set of repositories, resolved once per request. */
